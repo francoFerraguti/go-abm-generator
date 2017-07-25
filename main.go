@@ -21,23 +21,13 @@ func create(c *gin.Context) {
 	parentFolder := "temp/" + projectName
 
 	config := getConfigStruct(body["config"].(map[string]interface{}))
+	models := getModelsArray(body["models"].([]interface{}))
 
 	createFolderStructure(parentFolder)
 	createFiles(parentFolder, projectName, config)
 
     content := gin.H{"success": "true", "description": projectName}
     c.JSON(200, content)
-}
-
-func getConfigStruct(config map[string]interface{}) Config {
-	return Config {
-		DB_TYPE: config["db_type"].(string),
-		DB_USERNAME: config["db_username"].(string),
-		DB_PASSWORD: config["db_password"].(string),
-		DB_HOST: config["db_host"].(string),
-		DB_PORT: config["db_port"].(string),
-		DB_NAME: config["db_name"].(string),
-	}
 }
 
 func createFolderStructure(parentFolder string) {
@@ -53,4 +43,5 @@ func createFolderStructure(parentFolder string) {
 func createFiles(parentFolder string, projectName string, config Config) {
 	frango.CreateFile(parentFolder + "/main.go", getFileMainGo(projectName))
 	frango.CreateFile(parentFolder + "/config/config.go", getFileConfigGo(projectName, config))
+	frango.CreateFile(parentFolder + "/dbhandler/dbhandler.go", getDBHandlerGo(projectName))
 }
