@@ -1,13 +1,15 @@
 package main
 
 import (
+	"strings"
+
 	"github.com/gin-gonic/gin"
 	"github.com/liteByte/frango"
 )
 
 var router *gin.Engine
 
-func main(){
+func main() {
 	router = gin.New()
 
 	router.POST("/create/:project_name", create)
@@ -24,10 +26,10 @@ func create(c *gin.Context) {
 	models := getModelsArray(body["models"].([]interface{}))
 
 	createFolderStructure(parentFolder)
-	createFiles(parentFolder, projectName, config)
+	createFiles(parentFolder, projectName, config, models)
 
-    content := gin.H{"success": "true", "description": projectName}
-    c.JSON(200, content)
+	content := gin.H{"success": "true", "description": projectName}
+	c.JSON(200, content)
 }
 
 func createFolderStructure(parentFolder string) {
@@ -40,8 +42,18 @@ func createFolderStructure(parentFolder string) {
 	frango.CreateFolder(parentFolder + "/dbhandler")
 }
 
-func createFiles(parentFolder string, projectName string, config Config) {
-	frango.CreateFile(parentFolder + "/main.go", getFileMainGo(projectName))
-	frango.CreateFile(parentFolder + "/config/config.go", getFileConfigGo(projectName, config))
-	frango.CreateFile(parentFolder + "/dbhandler/dbhandler.go", getDBHandlerGo(projectName))
+func createFiles(parentFolder string, projectName string, config Config, models []Model) {
+	frango.CreateFile(parentFolder+"/main.go", getFileMainGo(projectName))
+	frango.CreateFile(parentFolder+"/config/config.go", getFileConfigGo(projectName, config))
+	frango.CreateFile(parentFolder+"/dbhandler/dbhandler.go", getFileDBHandlerGo(projectName))
+	createModelsAndControllers(parentFolder, models)
+}
+
+func createModelsAndControllers(parentFolder string, models []Model) {
+	for _, model := range models {
+		frango.CreateFolder(parentFolder + "/models/" + strings.ToLower(model.Name))
+		frango.CreateFolder(parentFolder + "/controllers/" + strings.ToLower(model.Name))
+
+		frango.CreateFile(parentFolder+"/models/"+strings.ToLower(model.Name)+"/"+strings.ToLower(model.Name)+".go", getFileModelGo(parentFolder, model))
+	}
 }

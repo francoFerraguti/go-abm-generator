@@ -1,5 +1,9 @@
 package main
 
+import (
+	"github.com/liteByte/frango"
+)
+
 type Config struct {
 	DB_TYPE     string
 	DB_USERNAME string
@@ -10,22 +14,22 @@ type Config struct {
 }
 
 type Model struct {
-	Name string
+	Name   string
 	Fields []Field
 }
 
 type Field struct {
-	Name string
-	Type string
+	Name     string
+	Type     string
 	Required bool
-	Default string
+	Default  string
 }
 
 func getModelsArray(modelsInterface []interface{}) []Model {
 	models := make([]Model, 0)
 
 	for key, _ := range modelsInterface {
-		modelInterface := modelsInterface[key].(map[string]interface {})
+		modelInterface := modelsInterface[key].(map[string]interface{})
 		fieldsInterface := modelInterface["fields"].([]interface{})
 
 		model := Model{}
@@ -34,12 +38,12 @@ func getModelsArray(modelsInterface []interface{}) []Model {
 		fields := make([]Field, 0)
 
 		for key2, _ := range fieldsInterface {
-			fieldInterface := fieldsInterface[key2].(map[string]interface {})
+			fieldInterface := fieldsInterface[key2].(map[string]interface{})
 
 			field := Field{}
 			field.Name = fieldInterface["name"].(string)
 			field.Type = fieldInterface["name"].(string)
-			field.Required = fieldInterface["name"].(bool)
+			field.Required = frango.StringToBool(fieldInterface["name"].(string))
 			field.Default = fieldInterface["name"].(string)
 
 			fields = append(fields, field)
@@ -53,13 +57,13 @@ func getModelsArray(modelsInterface []interface{}) []Model {
 }
 
 func getConfigStruct(config map[string]interface{}) Config {
-	return Config {
-		DB_TYPE: config["db_type"].(string),
+	return Config{
+		DB_TYPE:     config["db_type"].(string),
 		DB_USERNAME: config["db_username"].(string),
 		DB_PASSWORD: config["db_password"].(string),
-		DB_HOST: config["db_host"].(string),
-		DB_PORT: config["db_port"].(string),
-		DB_NAME: config["db_name"].(string),
+		DB_HOST:     config["db_host"].(string),
+		DB_PORT:     config["db_port"].(string),
+		DB_NAME:     config["db_name"].(string),
 	}
 }
 
