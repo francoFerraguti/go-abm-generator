@@ -1,10 +1,17 @@
 package main
 
 import (
-	"github.com/liteByte/frango"
+	"encoding/json"
+	"io"
+	"io/ioutil"
 )
 
-type Config struct {
+type DataStruct struct {
+	Config ConfigStruct
+	Models []ModelStruct
+}
+
+type ConfigStruct struct {
 	DB_TYPE     string
 	DB_USERNAME string
 	DB_PASSWORD string
@@ -13,58 +20,25 @@ type Config struct {
 	DB_NAME     string
 }
 
-type Model struct {
+type ModelStruct struct {
 	Name   string
-	Fields []Field
+	Fields []FieldStruct
 }
 
-type Field struct {
+type FieldStruct struct {
 	Name     string
 	Type     string
 	Required bool
 	Default  string
 }
 
-func getModelsArray(modelsInterface []interface{}) []Model {
-	models := make([]Model, 0)
+func parseBody(body io.ReadCloser) (DataStruct, error) {
+	bodyBytes, _ := ioutil.ReadAll(body)
 
-	for key, _ := range modelsInterface {
-		modelInterface := modelsInterface[key].(map[string]interface{})
-		fieldsInterface := modelInterface["fields"].([]interface{})
+	dataStruct := DataStruct{}
+	err := json.Unmarshal(bodyBytes, &dataStruct)
 
-		model := Model{}
-		model.Name = modelInterface["name"].(string)
-
-		fields := make([]Field, 0)
-
-		for key2, _ := range fieldsInterface {
-			fieldInterface := fieldsInterface[key2].(map[string]interface{})
-
-			field := Field{}
-			field.Name = fieldInterface["name"].(string)
-			field.Type = fieldInterface["name"].(string)
-			field.Required = frango.StringToBool(fieldInterface["name"].(string))
-			field.Default = fieldInterface["name"].(string)
-
-			fields = append(fields, field)
-		}
-
-		model.Fields = fields
-		models = append(models, model)
-	}
-
-	return models
-}
-
-func getConfigStruct(config map[string]interface{}) Config {
-	return Config{
-		DB_TYPE:     config["db_type"].(string),
-		DB_USERNAME: config["db_username"].(string),
-		DB_PASSWORD: config["db_password"].(string),
-		DB_HOST:     config["db_host"].(string),
-		DB_PORT:     config["db_port"].(string),
-		DB_NAME:     config["db_name"].(string),
-	}
+	return dataStruct, err
 }
 
 /*

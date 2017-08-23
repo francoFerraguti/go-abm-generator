@@ -19,17 +19,18 @@ func main() {
 
 func create(c *gin.Context) {
 	projectName := c.Param("project_name")
-	body := frango.ParseRequestBody(c)
 	parentFolder := "temp/" + projectName
 
-	config := getConfigStruct(body["config"].(map[string]interface{}))
-	models := getModelsArray(body["models"].([]interface{}))
+	data, err := parseBody(c.Request.Body)
+	if err != nil {
+		c.JSON(400, err.Error())
+		return
+	}
 
 	createFolderStructure(parentFolder)
-	createFiles(parentFolder, projectName, config, models)
+	createFiles(parentFolder, projectName, data.Config, data.Models)
 
-	content := gin.H{"success": "true", "description": projectName}
-	c.JSON(200, content)
+	c.JSON(200, projectName+" created successfully")
 }
 
 func createFolderStructure(parentFolder string) {
@@ -42,14 +43,14 @@ func createFolderStructure(parentFolder string) {
 	frango.CreateFolder(parentFolder + "/dbhandler")
 }
 
-func createFiles(parentFolder string, projectName string, config Config, models []Model) {
+func createFiles(parentFolder string, projectName string, config ConfigStruct, models []ModelStruct) {
 	frango.CreateFile(parentFolder+"/main.go", getFileMainGo(projectName))
 	frango.CreateFile(parentFolder+"/config/config.go", getFileConfigGo(projectName, config))
 	frango.CreateFile(parentFolder+"/dbhandler/dbhandler.go", getFileDBHandlerGo(projectName))
 	createModelsAndControllers(parentFolder, models)
 }
 
-func createModelsAndControllers(parentFolder string, models []Model) {
+func createModelsAndControllers(parentFolder string, models []ModelStruct) {
 	for _, model := range models {
 		frango.CreateFolder(parentFolder + "/models/" + strings.ToLower(model.Name))
 		frango.CreateFolder(parentFolder + "/controllers/" + strings.ToLower(model.Name))
