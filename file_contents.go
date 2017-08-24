@@ -101,13 +101,36 @@ func getFileStructsGo(projectName string, models []ModelStruct) string {
 }
 
 func getFileModelGo(projectName string, model ModelStruct) string {
-	return `package ` + strings.ToLower(projectName) + `
+	getByString := ""
+	deleteByString := ""
+
+	for _, field := range model.Fields {
+		if !field.Unique {
+			continue
+		}
+
+		getByString += "func GetBy" + frango.FirstLetterToUpper(field.Name) + "(" + frango.FirstLetterToLower(field.Name) + " " + field.Type + ") (" + model.Name + "Struct, error) {\n\n"
+		getByString += "}\n\n"
+
+		deleteByString += "func DeleteBy" + frango.FirstLetterToUpper(field.Name) + "(" + frango.FirstLetterToLower(field.Name) + " " + field.Type + ") error {\n\n"
+		deleteByString += "}\n\n"
+	}
+
+	return `package ` + strings.ToLower(model.Name) + `
 
 import (
 	` + projectName + `/dbhandler
 	` + projectName + `/structs
 )
 
-func Create()
-	`
+func Create(` + frango.FirstLetterToLower(model.Name) + " " + model.Name + `Struct` + `) error {
+
+}
+
+func Update(` + frango.FirstLetterToLower(model.Name) + " " + model.Name + `Struct` + `) error {
+
+}
+
+` + getByString + `
+` + deleteByString
 }

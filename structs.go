@@ -30,6 +30,7 @@ type FieldStruct struct {
 	Type     string
 	Required bool
 	Default  string
+	Unique   bool
 }
 
 func parseBody(body io.ReadCloser) (DataStruct, error) {
@@ -57,13 +58,15 @@ func parseBody(body io.ReadCloser) (DataStruct, error) {
 					"name": "username",
 					"type": "string",
 					"required": true,
-					"default": "asd"
+					"default": "asd",
+					"unique": true
 				},
 				{
 					"name": "password",
 					"type": "string",
 					"required": false,
-					"default": ""
+					"default": "",
+					"unique": false
 				}
 			]
 		},
@@ -73,13 +76,15 @@ func parseBody(body io.ReadCloser) (DataStruct, error) {
 					"name": "name",
 					"type": "string",
 					"required": true,
-					"default": "asd"
+					"default": "asd",
+					"unique": true
 				},
 				{
 					"name": "quantity",
 					"type": "int",
 					"required": false,
-					"default": 3
+					"default": "3",
+					"unique": false
 				}
 			]
 		}
