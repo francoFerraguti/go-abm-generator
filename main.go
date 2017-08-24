@@ -41,12 +41,15 @@ func createFolderStructure(parentFolder string) {
 	frango.CreateFolder(parentFolder + "/controllers")
 	frango.CreateFolder(parentFolder + "/models")
 	frango.CreateFolder(parentFolder + "/dbhandler")
+	frango.CreateFolder(parentFolder + "/structs")
 }
 
 func createFiles(parentFolder string, projectName string, config ConfigStruct, models []ModelStruct) {
 	frango.CreateFile(parentFolder+"/main.go", getFileMainGo(projectName))
 	frango.CreateFile(parentFolder+"/config/config.go", getFileConfigGo(projectName, config))
 	frango.CreateFile(parentFolder+"/dbhandler/dbhandler.go", getFileDBHandlerGo(projectName))
+	frango.CreateFile(parentFolder+"/structs/structs.go", getFileStructsGo(projectName, models))
+
 	createModelsAndControllers(parentFolder, models)
 }
 

@@ -1,5 +1,10 @@
 package main
 
+import (
+	"github.com/liteByte/frango"
+	"strings"
+)
+
 func getFileMainGo(projectName string) string {
 	return `package main
 
@@ -80,7 +85,29 @@ func GetDatabase() *sql.DB {
 	`
 }
 
+func getFileStructsGo(projectName string, models []ModelStruct) string {
+	structsString := ""
+	for _, model := range models {
+		structsString += "type " + model.Name + "Struct struct {\n"
+		for _, field := range model.Fields {
+			structsString += "	" + frango.FirstLetterToUpper(field.Name) + " " + field.Type + "\n"
+		}
+		structsString += "}\n\n"
+	}
+
+	return `package structs
+
+` + structsString
+}
+
 func getFileModelGo(projectName string, model ModelStruct) string {
-	return `
+	return `package ` + strings.ToLower(projectName) + `
+
+import (
+	` + projectName + `/dbhandler
+	` + projectName + `/structs
+)
+
+func Create()
 	`
 }
