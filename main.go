@@ -12,23 +12,24 @@ var router *gin.Engine
 func main() {
 	router = gin.New()
 
-	router.POST("/create/:project_name", create)
+	router.POST("/create", create)
 
 	router.Run(":8000")
 }
 
 func create(c *gin.Context) {
-	projectName := c.Param("project_name")
-	parentFolder := "temp/" + projectName
-
 	data, err := parseBody(c.Request.Body)
 	if err != nil {
 		c.JSON(400, err.Error())
 		return
 	}
 
+	projectName := getProjectName(data.ProjectPath)
+	port := data.Port
+	parentFolder := "temp/" + projectName
+
 	createFolderStructure(parentFolder)
-	createFiles(parentFolder, projectName, data.Config, data.Models)
+	createFiles(parentFolder, data.ProjectPath, port, data.Config, data.Models)
 
 	c.JSON(200, projectName+" created successfully")
 }
@@ -44,20 +45,28 @@ func createFolderStructure(parentFolder string) {
 	frango.CreateFolder(parentFolder + "/structs")
 }
 
-func createFiles(parentFolder string, projectName string, config ConfigStruct, models []ModelStruct) {
-	frango.CreateFile(parentFolder+"/main.go", getFileMainGo(projectName))
-	frango.CreateFile(parentFolder+"/config/config.go", getFileConfigGo(projectName, config))
-	frango.CreateFile(parentFolder+"/dbhandler/dbhandler.go", getFileDBHandlerGo(projectName))
-	frango.CreateFile(parentFolder+"/structs/structs.go", getFileStructsGo(projectName, models))
+func createFiles(parentFolder string, projectPath string, port string, config ConfigStruct, models []ModelStruct) {
+	frango.CreateFile(parentFolder+"/main.go", getFileMainGo(projectPath))
+	frango.CreateFile(parentFolder+"/config/config.go", getFileConfigGo(projectPath, port, config))
+	frango.CreateFile(parentFolder+"/dbhandler/dbhandler.go", getFileDBHandlerGo(projectPath, models))
+	frango.CreateFile(parentFolder+"/dbhandler/schema.go", getFileDBSchemaGo(models))
+	frango.CreateFile(parentFolder+"/structs/structs.go", getFileStructsGo(projectPath, models))
+	frango.CreateFile(parentFolder+"/router/router.go", getFileRouterGo(projectPath, models))
 
-	createModelsAndControllers(parentFolder, models)
+	createModelsAndControllers(parentFolder, projectPath, models)
 }
 
-func createModelsAndControllers(parentFolder string, models []ModelStruct) {
+func createModelsAndControllers(parentFolder string, projectPath string, models []ModelStruct) {
 	for _, model := range models {
 		frango.CreateFolder(parentFolder + "/models/" + strings.ToLower(model.Name))
 		frango.CreateFolder(parentFolder + "/controllers/" + strings.ToLower(model.Name))
 
-		frango.CreateFile(parentFolder+"/models/"+strings.ToLower(model.Name)+"/"+strings.ToLower(model.Name)+".go", getFileModelGo(parentFolder, model))
+		frango.CreateFile(parentFolder+"/models/"+strings.ToLower(model.Name)+"/"+strings.ToLower(model.Name)+".go", getFileModelGo(projectPath, model))
+		frango.CreateFile(parentFolder+"/controllers/"+strings.ToLower(model.Name)+"/"+strings.ToLower(model.Name)+".go", getFileControllerGo(projectPath, model))
 	}
+}
+
+func getProjectName(projectPath string) string {
+	substringArray := strings.Split(projectPath, "/")
+	return substringArray[len(substringArray)-1]
 }
