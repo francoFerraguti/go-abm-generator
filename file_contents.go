@@ -23,13 +23,97 @@ func main() {
 	`
 }
 
-func getFileConfigGo(projectName string, port string, config ConfigStruct) string {
+func getFileAuthenticationGo(projectName string, needAuthentication bool, models []ModelStruct) string {
+	//authenticationModel := ModelStruct{}
+	usernameField := FieldStruct{}
+	//passwordField := FieldStruct{}
+
+	for _, model := range models {
+		for _, field := range model.Fields {
+			if field.AuthenticationUsername {
+				usernameField = field
+				//authenticationModel = model
+			}
+			if field.AuthenticationPassword {
+				//passwordField = field
+				//authenticationModel = model
+			}
+		}
+	}
+
+	usernameInStruct := frango.FirstLetterToUpper(usernameField.Name) + " " + usernameField.Type
+
+	return `package authentication
+
+import (
+	"github.com/dgrijalva/jwt-go"
+)
+
+type CustomClaims struct {
+	` + usernameInStruct + `
+	jwt.StandardClaims
+}
+
+type Token struct {
+	` + usernameInStruct + `
+}
+
+func CreateToken(` + frango.FirstLetterToLower(usernameField.Name) + " " + usernameField.Type + `) string {
+    claims := CustomClaims {
+        ` + frango.FirstLetterToLower(usernameField.Name) + `,
+        jwt.StandardClaims{
+            ExpiresAt: time.Now().Add(time.Hour * 24).Unix(),
+			IssuedAt:  time.Now().Unix(),
+            Issuer:    "TODO change to application name",
+        },
+    }
+
+    token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+
+    tokenString, _ := token.SignedString([]byte(config.GetConfig().JWT_SECRET))
+
+    return tokenString
+}
+
+func GetTokenData(tokenString string) Token {
+	token, err := jwt.ParseWithClaims(tokenString, &CustomClaims{}, func(token *jwt.Token) (interface{}, error) {
+		return []byte(config.GetConfig().JWT_SECRET), nil
+	})
+	if err != nil {
+		return Token{}
+	}
+
+	if claims, ok := token.Claims.(*CustomClaims); ok && token.Valid {
+		return Token{
+			claims.` + frango.FirstLetterToUpper(usernameField.Name) + `,
+			claims.StandardClaims.ExpiresAt, 
+			claims.StandardClaims.IssuedAt, 
+			claims.StandardClaims.Issuer,
+		}
+	} else {
+		return Token{}
+	}
+}
+
+
+`
+
+}
+
+func getFileConfigGo(projectName string, needAuthentication bool, config ConfigStruct) string {
+	authenticationString := ""
+	authenticationString2 := ""
+	if needAuthentication {
+		authenticationString = "	JWT_SECRET	string"
+		authenticationString2 = `		JWT_SECRET:		"` + frango.GetRandomString(32) + `",`
+	}
+
 	return `package config
 
 type Config struct {
 	ENV			string
 	PORT 		string
-
+` + authenticationString + `
 	DB_TYPE		string
 	DB_USERNAME	string
 	DB_PASSWORD	string
@@ -51,7 +135,8 @@ func GetConfig() *Config {
 func newConfigLocal() Config {
 	return Config{
 		ENV:			"develop",
-		PORT:			"` + port + `",
+		PORT:			"` + config.Port + `",
+` + authenticationString2 + `
 		DB_TYPE:       	"` + config.DB_TYPE + `",
 		DB_USERNAME:    "` + config.DB_USERNAME + `",
 		DB_PASSWORD:    "` + config.DB_PASSWORD + `",

@@ -25,16 +25,16 @@ func create(c *gin.Context) {
 	}
 
 	projectName := getProjectName(data.ProjectPath)
-	port := data.Port
+	needAuthentication := data.NeedAuthentication
 	parentFolder := "temp/" + projectName
 
-	createFolderStructure(parentFolder)
-	createFiles(parentFolder, data.ProjectPath, port, data.Config, data.Models)
+	createFolderStructure(parentFolder, needAuthentication)
+	createFiles(parentFolder, data.ProjectPath, needAuthentication, data.Config, data.Models)
 
 	c.JSON(200, projectName+" created successfully")
 }
 
-func createFolderStructure(parentFolder string) {
+func createFolderStructure(parentFolder string, needAuthentication bool) {
 	frango.CreateFolder("temp")
 	frango.CreateFolder(parentFolder)
 	frango.CreateFolder(parentFolder + "/config")
@@ -43,15 +43,23 @@ func createFolderStructure(parentFolder string) {
 	frango.CreateFolder(parentFolder + "/models")
 	frango.CreateFolder(parentFolder + "/dbhandler")
 	frango.CreateFolder(parentFolder + "/structs")
+
+	if needAuthentication {
+		frango.CreateFolder(parentFolder + "/authentication")
+	}
 }
 
-func createFiles(parentFolder string, projectPath string, port string, config ConfigStruct, models []ModelStruct) {
+func createFiles(parentFolder string, projectPath string, needAuthentication bool, config ConfigStruct, models []ModelStruct) {
 	frango.CreateFile(parentFolder+"/main.go", getFileMainGo(projectPath))
-	frango.CreateFile(parentFolder+"/config/config.go", getFileConfigGo(projectPath, port, config))
+	frango.CreateFile(parentFolder+"/config/config.go", getFileConfigGo(projectPath, needAuthentication, config))
 	frango.CreateFile(parentFolder+"/dbhandler/dbhandler.go", getFileDBHandlerGo(projectPath, models))
 	frango.CreateFile(parentFolder+"/dbhandler/schema.go", getFileDBSchemaGo(models))
 	frango.CreateFile(parentFolder+"/structs/structs.go", getFileStructsGo(projectPath, models))
 	frango.CreateFile(parentFolder+"/router/router.go", getFileRouterGo(projectPath, models))
+
+	if needAuthentication {
+		frango.CreateFile(parentFolder+"/authentication/authentication.go", getFileAuthenticationGo(projectPath, needAuthentication, models))
+	}
 
 	createModelsAndControllers(parentFolder, projectPath, models)
 }
