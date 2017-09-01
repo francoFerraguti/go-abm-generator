@@ -46,6 +46,7 @@ func createFolderStructure(parentFolder string, needAuthentication bool) {
 
 	if needAuthentication {
 		frango.CreateFolder(parentFolder + "/authentication")
+		frango.CreateFolder(parentFolder + "/middleware")
 	}
 }
 
@@ -58,7 +59,8 @@ func createFiles(parentFolder string, projectPath string, needAuthentication boo
 	frango.CreateFile(parentFolder+"/router/router.go", getFileRouterGo(projectPath, models))
 
 	if needAuthentication {
-		frango.CreateFile(parentFolder+"/authentication/authentication.go", getFileAuthenticationGo(projectPath, needAuthentication, models))
+		frango.CreateFile(parentFolder+"/authentication/authentication.go", getFileAuthenticationGo(projectPath, models))
+		frango.CreateFile(parentFolder+"/middleware/middleware.go", getFileMiddlewareGo(projectPath, models))
 	}
 
 	createModelsAndControllers(parentFolder, projectPath, models)
