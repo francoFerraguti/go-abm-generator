@@ -47,6 +47,7 @@ func createFolderStructure(parentFolder string, needAuthentication bool) {
 	if needAuthentication {
 		frango.CreateFolder(parentFolder + "/authentication")
 		frango.CreateFolder(parentFolder + "/middleware")
+		frango.CreateFolder(parentFolder + "/controllers/authentication")
 	}
 }
 
@@ -55,23 +56,24 @@ func createFiles(parentFolder string, projectPath string, needAuthentication boo
 	frango.CreateFile(parentFolder+"/config/config.go", getFileConfigGo(projectPath, needAuthentication, config))
 	frango.CreateFile(parentFolder+"/dbhandler/dbhandler.go", getFileDBHandlerGo(projectPath, models))
 	frango.CreateFile(parentFolder+"/dbhandler/schema.go", getFileDBSchemaGo(models))
-	frango.CreateFile(parentFolder+"/structs/structs.go", getFileStructsGo(projectPath, models))
-	frango.CreateFile(parentFolder+"/router/router.go", getFileRouterGo(projectPath, models))
+	frango.CreateFile(parentFolder+"/structs/structs.go", getFileStructsGo(projectPath, needAuthentication, models))
+	frango.CreateFile(parentFolder+"/router/router.go", getFileRouterGo(projectPath, needAuthentication, models))
+
+	createModelsAndControllers(parentFolder, projectPath, needAuthentication, models)
 
 	if needAuthentication {
 		frango.CreateFile(parentFolder+"/authentication/authentication.go", getFileAuthenticationGo(projectPath, models))
 		frango.CreateFile(parentFolder+"/middleware/middleware.go", getFileMiddlewareGo(projectPath, models))
+		frango.CreateFile(parentFolder+"/controllers/authentication/authentication.go", getFileControllerAuthenticationGo(projectPath, models))
 	}
-
-	createModelsAndControllers(parentFolder, projectPath, models)
 }
 
-func createModelsAndControllers(parentFolder string, projectPath string, models []ModelStruct) {
+func createModelsAndControllers(parentFolder string, projectPath string, needAuthentication bool, models []ModelStruct) {
 	for _, model := range models {
 		frango.CreateFolder(parentFolder + "/models/" + strings.ToLower(model.Name))
 		frango.CreateFolder(parentFolder + "/controllers/" + strings.ToLower(model.Name))
 
-		frango.CreateFile(parentFolder+"/models/"+strings.ToLower(model.Name)+"/"+strings.ToLower(model.Name)+".go", getFileModelGo(projectPath, model))
+		frango.CreateFile(parentFolder+"/models/"+strings.ToLower(model.Name)+"/"+strings.ToLower(model.Name)+".go", getFileModelGo(projectPath, needAuthentication, model))
 		frango.CreateFile(parentFolder+"/controllers/"+strings.ToLower(model.Name)+"/"+strings.ToLower(model.Name)+".go", getFileControllerGo(projectPath, model))
 	}
 }

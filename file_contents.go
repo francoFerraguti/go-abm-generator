@@ -23,6 +23,72 @@ func main() {
 	`
 }
 
+func getFileControllerAuthenticationGo(projectName string, models []ModelStruct) string {
+	authenticationModel := ModelStruct{}
+	usernameField := FieldStruct{}
+	passwordField := FieldStruct{}
+
+	for _, model := range models {
+		for _, field := range model.Fields {
+			if field.AuthenticationUsername {
+				authenticationModel = model
+				usernameField = field
+			}
+
+			if field.AuthenticationPassword {
+				authenticationModel = model
+				passwordField = field
+			}
+		}
+	}
+
+	return `package authentication
+
+import (
+	"` + projectName + `/structs"
+	"` + projectName + `/authentication"
+	"` + projectName + `/models/` + frango.FirstLetterToLower(authenticationModel.Name) + `"
+    "github.com/liteByte/frango"
+	"github.com/gin-gonic/gin"
+)
+
+func Login(c *gin.Context) {
+	loginStruct, err := structs.ParseBodyIntoLoginStruct(c.Request.Body)
+	if err != nil {
+		c.JSON(400, err.Error())
+		return
+	}
+
+	loginStruct.` + frango.FirstLetterToUpper(passwordField.Name) + ` = frango.Hash(loginStruct.` + frango.FirstLetterToUpper(usernameField.Name) + `, loginStruct.` + frango.FirstLetterToUpper(passwordField.Name) + `)
+
+	if err = ` + frango.FirstLetterToLower(authenticationModel.Name) + `.CheckLogin(loginStruct); err != nil {
+		c.JSON(500, err.Error())
+		return
+	}
+
+	token := authentication.CreateToken(loginStruct.` + frango.FirstLetterToUpper(usernameField.Name) + `)
+
+	c.JSON(200, token)
+}
+
+func Signup(c *gin.Context) {
+	` + frango.FirstLetterToLower(authenticationModel.Name) + `Struct, err := structs.ParseBodyInto` + frango.FirstLetterToUpper(authenticationModel.Name) + `Struct(c.Request.Body)
+	if err != nil {
+		c.JSON(400, err.Error())
+		return
+	}
+
+	` + frango.FirstLetterToLower(authenticationModel.Name) + `Struct.` + frango.FirstLetterToUpper(passwordField.Name) + ` = frango.Hash(` + frango.FirstLetterToLower(authenticationModel.Name) + `Struct.` + frango.FirstLetterToUpper(usernameField.Name) + `, ` + frango.FirstLetterToLower(authenticationModel.Name) + `Struct.` + frango.FirstLetterToUpper(passwordField.Name) + `)
+
+	if err = ` + frango.FirstLetterToLower(authenticationModel.Name) + `.Create(` + frango.FirstLetterToLower(authenticationModel.Name) + `Struct); err != nil {
+		c.JSON(500, err.Error())
+		return		
+	}
+
+	c.JSON(200, "Signup successful")
+}`
+}
+
 func getFileMiddlewareGo(projectName string, models []ModelStruct) string {
 	usernameField := FieldStruct{}
 
@@ -59,19 +125,12 @@ func ValidateToken() gin.HandlerFunc {
 }
 
 func getFileAuthenticationGo(projectName string, models []ModelStruct) string {
-	//authenticationModel := ModelStruct{}
 	usernameField := FieldStruct{}
-	//passwordField := FieldStruct{}
 
 	for _, model := range models {
 		for _, field := range model.Fields {
 			if field.AuthenticationUsername {
 				usernameField = field
-				//authenticationModel = model
-			}
-			if field.AuthenticationPassword {
-				//passwordField = field
-				//authenticationModel = model
 			}
 		}
 	}
@@ -81,7 +140,9 @@ func getFileAuthenticationGo(projectName string, models []ModelStruct) string {
 	return `package authentication
 
 import (
+	"time"
 	"github.com/dgrijalva/jwt-go"
+	"` + projectName + `/config"
 )
 
 type CustomClaims struct {
@@ -121,9 +182,6 @@ func GetTokenData(tokenString string) Token {
 	if claims, ok := token.Claims.(*CustomClaims); ok && token.Valid {
 		return Token{
 			claims.` + frango.FirstLetterToUpper(usernameField.Name) + `,
-			claims.StandardClaims.ExpiresAt, 
-			claims.StandardClaims.IssuedAt, 
-			claims.StandardClaims.Issuer,
 		}
 	} else {
 		return Token{}
@@ -290,8 +348,10 @@ import (
 ` + schemaString
 }
 
-func getFileStructsGo(projectName string, models []ModelStruct) string {
+func getFileStructsGo(projectName string, needAuthentication bool, models []ModelStruct) string {
 	structsString := ""
+	authStructString := ""
+
 	for _, model := range models {
 		structsString += "type " + model.Name + "Struct struct {\n"
 		for _, field := range model.Fields {
@@ -307,6 +367,27 @@ func getFileStructsGo(projectName string, models []ModelStruct) string {
 		structsString += "}\n\n"
 	}
 
+	if needAuthentication {
+		authStructString += "type LoginStruct struct {\n"
+
+		for _, model := range models {
+			for _, field := range model.Fields {
+				if field.AuthenticationUsername || field.AuthenticationPassword {
+					authStructString += "	" + frango.FirstLetterToUpper(field.Name) + " " + field.Type + "\n"
+				}
+			}
+		}
+
+		authStructString += "}\n\n"
+
+		authStructString += "func ParseBodyIntoLoginStruct(body io.ReadCloser) (LoginStruct, error) {\n"
+		authStructString += "    bodyBytes, _ := ioutil.ReadAll(body)\n"
+		authStructString += "    loginStruct := LoginStruct{}\n"
+		authStructString += "    err := json.Unmarshal(bodyBytes, &loginStruct)\n"
+		authStructString += "    return loginStruct, err\n"
+		authStructString += "}\n\n"
+	}
+
 	return `package structs
 
 import (
@@ -315,12 +396,28 @@ import (
 	"io/ioutil"
 )
 
-` + structsString
+` + structsString + authStructString
 }
 
-func getFileRouterGo(projectName string, models []ModelStruct) string {
+func getFileRouterGo(projectName string, needAuthentication bool, models []ModelStruct) string {
 	importString := ""
 	endpointsString := ""
+	authMiddlewareString := ""
+	authEndpoints := ""
+	authImports := ""
+
+	if needAuthentication {
+		authMiddlewareString = ", middleware.ValidateToken()"
+
+		authEndpoints = `	public := router.Group("/")
+	{
+		public.POST("/signup", authentication.Signup)
+		public.POST("/login", authentication.Login)
+	}`
+
+		authImports = `	"` + projectName + `/middleware"
+	"` + projectName + `/controllers/authentication"`
+	}
 
 	for _, model := range models {
 		importString += "	`" + projectName + "/controllers/" + frango.FirstLetterToLower(model.Name) + "`\n"
@@ -343,7 +440,8 @@ func getFileRouterGo(projectName string, models []ModelStruct) string {
 import (
 	"github.com/gin-gonic/gin"
 	"` + projectName + `/config"
-` + importString + `)
+` + importString + authImports + `
+)
 
 var router *gin.Engine
 
@@ -356,7 +454,9 @@ func ConfigureRouter() {
 func CreateRouter() {
 	router = gin.New()
 
-	api := router.Group("/")
+` + authEndpoints + `
+
+	api := router.Group("/"` + authMiddlewareString + `)
 	{
 ` + endpointsString + `    }
 }
@@ -367,12 +467,23 @@ func RunRouter() {
 `
 }
 
-func getFileModelGo(projectName string, model ModelStruct) string {
+func getFileModelGo(projectName string, needAuthentication bool, model ModelStruct) string {
 	getByString := ""
 	deleteByString := ""
 	updateByString := ""
+	checkLoginString := ""
+	authenticationUsername := FieldStruct{}
+	authenticationPassword := FieldStruct{}
+	authImportString := ""
 
 	for _, field := range model.Fields {
+		if field.AuthenticationUsername {
+			authenticationUsername = field
+		}
+		if field.AuthenticationPassword {
+			authenticationPassword = field
+		}
+
 		if !field.Unique {
 			continue
 		}
@@ -382,14 +493,31 @@ func getFileModelGo(projectName string, model ModelStruct) string {
 		deleteByString += modelDeleteBy(model, field)
 	}
 
+	if needAuthentication && authenticationUsername.Name != "" && authenticationPassword.Name != "" {
+		checkLoginString += "func CheckLogin(loginStruct structs.LoginStruct) error {\n"
+		checkLoginString += "	var exists bool\n\n"
+		checkLoginString += "	err := dbhandler.GetDatabase().QueryRow(`SELECT EXISTS (SELECT 1 FROM " + frango.FirstLetterToUpper(model.Name) + " WHERE " + authenticationUsername.Name + " = ? AND " + authenticationPassword.Name + " = ? LIMIT 1)`, loginStruct." + frango.FirstLetterToUpper(authenticationUsername.Name) + ", loginStruct." + frango.FirstLetterToUpper(authenticationPassword.Name) + ").Scan(&exists)\n"
+		checkLoginString += "	if err != nil {\n"
+		checkLoginString += "		return err\n"
+		checkLoginString += "	}\n\n"
+		checkLoginString += "	if !exists {\n"
+		checkLoginString += "		return errors.New(`Login failed`)\n"
+		checkLoginString += "	}\n\n"
+		checkLoginString += "	return nil\n"
+		checkLoginString += "}\n\n"
+
+		authImportString = `"errors"`
+	}
+
 	return `package ` + strings.ToLower(model.Name) + `
 
 import (
+	` + authImportString + `
 	"` + projectName + `/dbhandler"
     "` + projectName + `/structs"
 )
 
-` + modelCreate(model) + updateByString + getByString + deleteByString
+` + checkLoginString + modelCreate(model) + updateByString + getByString + deleteByString
 }
 
 func getFileControllerGo(projectName string, model ModelStruct) string {
