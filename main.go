@@ -58,6 +58,7 @@ func createFiles(parentFolder string, projectPath string, needAuthentication boo
 	frango.CreateFile(parentFolder+"/dbhandler/schema.go", getFileDBSchemaGo(models))
 	frango.CreateFile(parentFolder+"/structs/structs.go", getFileStructsGo(projectPath, needAuthentication, models))
 	frango.CreateFile(parentFolder+"/router/router.go", getFileRouterGo(projectPath, needAuthentication, models))
+	frango.CreateFile(parentFolder+"/documentation.md", getFileDocumentation(needAuthentication, models))
 
 	createModelsAndControllers(parentFolder, projectPath, needAuthentication, models)
 
