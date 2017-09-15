@@ -1,15 +1,16 @@
 package main
 
 import (
+	"github.com/francoFerraguti/go-abm-generator/structs"
 	"github.com/liteByte/frango"
 	"strconv"
 	"strings"
 )
 
-func getFileControllerAuthenticationGo(projectName string, models []ModelStruct) string {
-	authenticationModel := ModelStruct{}
-	usernameField := FieldStruct{}
-	passwordField := FieldStruct{}
+func getFileControllerAuthenticationGo(projectName string, models []structs.ModelStruct) string {
+	authenticationModel := structs.ModelStruct{}
+	usernameField := structs.FieldStruct{}
+	passwordField := structs.FieldStruct{}
 
 	for _, model := range models {
 		for _, field := range model.Fields {
@@ -72,8 +73,8 @@ func Signup(c *gin.Context) {
 }`
 }
 
-func getFileAuthenticationGo(projectName string, models []ModelStruct) string {
-	usernameField := FieldStruct{}
+func getFileAuthenticationGo(projectName string, models []structs.ModelStruct) string {
+	usernameField := structs.FieldStruct{}
 
 	for _, model := range models {
 		for _, field := range model.Fields {
@@ -139,55 +140,7 @@ func GetTokenData(tokenString string) Token {
 `
 }
 
-func getFileConfigGo(projectName string, needAuthentication bool, config ConfigStruct) string {
-	authenticationString := ""
-	authenticationString2 := ""
-	if needAuthentication {
-		authenticationString = "	JWT_SECRET	string"
-		authenticationString2 = `		JWT_SECRET:		"` + frango.GetRandomString(32) + `",`
-	}
-
-	return `package config
-
-type Config struct {
-	ENV			string
-	PORT 		string
-` + authenticationString + `
-	DB_TYPE		string
-	DB_USERNAME	string
-	DB_PASSWORD	string
-	DB_HOST		string
-	DB_PORT		string
-	DB_NAME 	string
-}
-
-var instance *Config
-
-func GetConfig() *Config {
-	if instance == nil {
-		config := newConfigLocal()
-		instance = &config
-	}
-	return instance
-}
-
-func newConfigLocal() Config {
-	return Config{
-		ENV:			"develop",
-		PORT:			"` + config.Port + `",
-` + authenticationString2 + `
-		DB_TYPE:       	"` + config.DB_TYPE + `",
-		DB_USERNAME:    "` + config.DB_USERNAME + `",
-		DB_PASSWORD:    "` + config.DB_PASSWORD + `",
-		DB_HOST:      	"` + config.DB_HOST + `",
-		DB_PORT:       	"` + config.DB_PORT + `",
-		DB_NAME:       	"` + config.DB_NAME + `",
-	}
-}
-	`
-}
-
-func getFileDBHandlerGo(projectPath string, models []ModelStruct) string {
+func getFileDBHandlerGo(projectPath string, models []structs.ModelStruct) string {
 	schemaString := "func createSchema() {\n"
 
 	for _, model := range models {
@@ -227,7 +180,7 @@ func GetDatabase() *sql.DB {
 ` + schemaString
 }
 
-func getFileDBSchemaGo(models []ModelStruct) string {
+func getFileDBSchemaGo(models []structs.ModelStruct) string {
 	schemaString := ""
 
 	for _, model := range models {
@@ -296,7 +249,7 @@ import (
 ` + schemaString
 }
 
-func getFileStructsGo(projectName string, needAuthentication bool, models []ModelStruct) string {
+func getFileStructsGo(projectName string, needAuthentication bool, models []structs.ModelStruct) string {
 	structsString := ""
 	authStructString := ""
 
@@ -347,81 +300,13 @@ import (
 ` + structsString + authStructString
 }
 
-func getFileRouterGo(projectName string, needAuthentication bool, models []ModelStruct) string {
-	importString := ""
-	endpointsString := ""
-	authMiddlewareString := ""
-	authEndpoints := ""
-	authImports := ""
-
-	if needAuthentication {
-		authMiddlewareString = ", middleware.ValidateToken()"
-
-		authEndpoints = `	public := router.Group("/")
-	{
-		public.POST("/signup", authentication.Signup)
-		public.POST("/login", authentication.Login)
-	}`
-
-		authImports = `	"` + projectName + `/middleware"
-	"` + projectName + `/controllers/authentication"`
-	}
-
-	for _, model := range models {
-		importString += "	`" + projectName + "/controllers/" + frango.FirstLetterToLower(model.Name) + "`\n"
-
-		endpointsString += "		api.POST(`/" + frango.FirstLetterToLower(model.Name) + "`, " + frango.FirstLetterToLower(model.Name) + ".Create)\n"
-
-		for _, field := range model.Fields {
-			if !field.Unique {
-				continue
-			}
-
-			endpointsString += "		api.GET(`/" + frango.FirstLetterToLower(model.Name) + "/" + frango.FirstLetterToLower(field.Name) + "/:" + frango.FirstLetterToLower(field.Name) + "`, " + frango.FirstLetterToLower(model.Name) + ".GetBy" + frango.FirstLetterToUpper(field.Name) + ")\n"
-			endpointsString += "		api.PUT(`/" + frango.FirstLetterToLower(model.Name) + "/" + frango.FirstLetterToLower(field.Name) + "/:" + frango.FirstLetterToLower(field.Name) + "`, " + frango.FirstLetterToLower(model.Name) + ".UpdateBy" + frango.FirstLetterToUpper(field.Name) + ")\n"
-			endpointsString += "		api.DELETE(`/" + frango.FirstLetterToLower(model.Name) + "/" + frango.FirstLetterToLower(field.Name) + "/:" + frango.FirstLetterToLower(field.Name) + "`, " + frango.FirstLetterToLower(model.Name) + ".DeleteBy" + frango.FirstLetterToUpper(field.Name) + ")\n"
-		}
-	}
-
-	return `package router
-
-import (
-	"github.com/gin-gonic/gin"
-	"` + projectName + `/config"
-` + importString + authImports + `
-)
-
-var router *gin.Engine
-
-func ConfigureRouter() {
-	if config.GetConfig().ENV != "develop" {
-		gin.SetMode(gin.ReleaseMode)
-	}
-}
-
-func CreateRouter() {
-	router = gin.New()
-
-` + authEndpoints + `
-
-	api := router.Group("/"` + authMiddlewareString + `)
-	{
-` + endpointsString + `    }
-}
-
-func RunRouter() {
-	router.Run(":" + config.GetConfig().PORT)
-}
-`
-}
-
-func getFileModelGo(projectName string, needAuthentication bool, model ModelStruct) string {
+func getFileModelGo(projectName string, needAuthentication bool, model structs.ModelStruct) string {
 	getByString := ""
 	deleteByString := ""
 	updateByString := ""
 	checkLoginString := ""
-	authenticationUsername := FieldStruct{}
-	authenticationPassword := FieldStruct{}
+	authenticationUsername := structs.FieldStruct{}
+	authenticationPassword := structs.FieldStruct{}
 	authImportString := ""
 
 	for _, field := range model.Fields {
@@ -468,7 +353,7 @@ import (
 ` + checkLoginString + modelCreate(model) + updateByString + getByString + deleteByString
 }
 
-func getFileControllerGo(projectName string, model ModelStruct) string {
+func getFileControllerGo(projectName string, model structs.ModelStruct) string {
 	getByString := ""
 	deleteByString := ""
 	updateByString := ""
@@ -500,14 +385,14 @@ import (
 ` + controllerCreate(model) + updateByString + getByString + deleteByString
 }
 
-func getFileDocumentation(needAuthentication bool, models []ModelStruct) string {
+func getFileDocumentation(needAuthentication bool, models []structs.ModelStruct) string {
 	s := ""
 
 	if needAuthentication {
 
-		authModel := ModelStruct{}
-		usernameField := FieldStruct{}
-		passwordField := FieldStruct{}
+		authModel := structs.ModelStruct{}
+		usernameField := structs.FieldStruct{}
+		passwordField := structs.FieldStruct{}
 
 		for _, model := range models {
 			for _, field := range model.Fields {
@@ -672,7 +557,7 @@ func getEndpointDocumentation(title, description, endpoint, method, url_params, 
 `
 }
 
-func getEndpointBody(model ModelStruct, onlySend bool) string {
+func getEndpointBody(model structs.ModelStruct, onlySend bool) string {
 	s := "{\n"
 
 	for i, field := range model.Fields {

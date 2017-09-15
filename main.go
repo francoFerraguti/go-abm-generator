@@ -7,6 +7,7 @@ import (
 	"github.com/liteByte/frango"
 
 	"github.com/francoFerraguti/go-abm-generator/generator"
+	"github.com/francoFerraguti/go-abm-generator/structs"
 )
 
 var router *gin.Engine
@@ -20,7 +21,7 @@ func main() {
 }
 
 func create(c *gin.Context) {
-	data, err := parseBody(c.Request.Body)
+	data, err := structs.ParseBody(c.Request.Body)
 	if err != nil {
 		c.JSON(400, err.Error())
 		return
@@ -53,25 +54,25 @@ func createFolderStructure(parentFolder string, needAuthentication bool) {
 	}
 }
 
-func createFiles(parentFolder string, projectPath string, needAuthentication bool, config ConfigStruct, models []ModelStruct) {
+func createFiles(parentFolder string, projectPath string, needAuthentication bool, config structs.ConfigStruct, models []structs.ModelStruct) {
 	frango.CreateFile(parentFolder+"/main.go", generator.GetMain(projectPath))
-	frango.CreateFile(parentFolder+"/config/config.go", getFileConfigGo(projectPath, needAuthentication, config))
+	frango.CreateFile(parentFolder+"/config/config.go", generator.GetConfig(projectPath, needAuthentication, config))
 	frango.CreateFile(parentFolder+"/dbhandler/dbhandler.go", getFileDBHandlerGo(projectPath, models))
 	frango.CreateFile(parentFolder+"/dbhandler/schema.go", getFileDBSchemaGo(models))
 	frango.CreateFile(parentFolder+"/structs/structs.go", getFileStructsGo(projectPath, needAuthentication, models))
-	frango.CreateFile(parentFolder+"/router/router.go", getFileRouterGo(projectPath, needAuthentication, models))
+	frango.CreateFile(parentFolder+"/router/router.go", generator.GetRouter(projectPath, needAuthentication, models))
 	frango.CreateFile(parentFolder+"/documentation.md", getFileDocumentation(needAuthentication, models))
 
 	createModelsAndControllers(parentFolder, projectPath, needAuthentication, models)
 
 	if needAuthentication {
 		frango.CreateFile(parentFolder+"/authentication/authentication.go", getFileAuthenticationGo(projectPath, models))
-		frango.CreateFile(parentFolder+"/middleware/middleware.go", getFileMiddlewareGo(projectPath, models))
+		frango.CreateFile(parentFolder+"/middleware/middleware.go", generator.GetMiddleware(projectPath, models))
 		frango.CreateFile(parentFolder+"/controllers/authentication/authentication.go", getFileControllerAuthenticationGo(projectPath, models))
 	}
 }
 
-func createModelsAndControllers(parentFolder string, projectPath string, needAuthentication bool, models []ModelStruct) {
+func createModelsAndControllers(parentFolder string, projectPath string, needAuthentication bool, models []structs.ModelStruct) {
 	for _, model := range models {
 		frango.CreateFolder(parentFolder + "/models/" + strings.ToLower(model.Name))
 		frango.CreateFolder(parentFolder + "/controllers/" + strings.ToLower(model.Name))

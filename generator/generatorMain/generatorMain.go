@@ -1,18 +1,17 @@
 package generatorMain
 
 import (
-	"strings"
-	"github.com/francoFerraguti/go-abm-generator/templates"
 	"github.com/francoFerraguti/go-abm-generator/common"
+	"github.com/francoFerraguti/go-abm-generator/templates"
+	"strings"
 )
 
 func Get(projectPath string) string {
 	template := templates.MainGo()
 
-	imports := common.GetImports(projectPath, "dbhandler", "router")
+	imports := common.GetImports(projectPath+"/dbhandler", projectPath+"/router")
 
 	fileContent := strings.Replace(template, "&&IMPORTS&&", imports, -1)
 
 	return fileContent
 }
-

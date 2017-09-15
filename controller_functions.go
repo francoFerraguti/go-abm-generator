@@ -1,11 +1,12 @@
 package main
 
 import (
+	"github.com/francoFerraguti/go-abm-generator/structs"
 	"github.com/liteByte/frango"
 	"strings"
 )
 
-func controllerCreate(model ModelStruct) string {
+func controllerCreate(model structs.ModelStruct) string {
 	createString := ""
 
 	createString += "func Create(c *gin.Context) {\n"
@@ -24,7 +25,7 @@ func controllerCreate(model ModelStruct) string {
 	return createString
 }
 
-func controllerUpdateBy(model ModelStruct, field FieldStruct) string {
+func controllerUpdateBy(model structs.ModelStruct, field structs.FieldStruct) string {
 	updateString := ""
 	beforeConvert := ""
 	afterConvert := ""
@@ -51,7 +52,7 @@ func controllerUpdateBy(model ModelStruct, field FieldStruct) string {
 	return updateString
 }
 
-func controllerGetBy(model ModelStruct, field FieldStruct) string {
+func controllerGetBy(model structs.ModelStruct, field structs.FieldStruct) string {
 	getByString := ""
 	beforeConvert := ""
 	afterConvert := ""
@@ -75,7 +76,7 @@ func controllerGetBy(model ModelStruct, field FieldStruct) string {
 	return getByString
 }
 
-func controllerDeleteBy(model ModelStruct, field FieldStruct) string {
+func controllerDeleteBy(model structs.ModelStruct, field structs.FieldStruct) string {
 	deleteByString := ""
 	beforeConvert := ""
 	afterConvert := ""

@@ -1,24 +1,36 @@
 package common
 
-import(
+import (
 	"strings"
 )
 
-func GetImports(projectPath string, files... string) string {
+func GetImports(files ...string) string {
 	s := `
 import (
 	&&IMPORTS&&
 )`
-	importsString := getImportsString(projectPath, files)
+	importsString := getImportsString(files)
 
 	s = strings.Replace(s, "&&IMPORTS&&", importsString, -1)
 
 	return strings.Trim(s, "\n")
 }
 
-func getImportsString(projectPath string, files []string) string {
+func GetImportsWithArray(files []string) string {
+	s := `
+import (
+	&&IMPORTS&&
+)`
+	importsString := getImportsString(files)
+
+	s = strings.Replace(s, "&&IMPORTS&&", importsString, -1)
+
+	return strings.Trim(s, "\n")
+}
+
+func getImportsString(files []string) string {
 	for key, _ := range files {
-		files[key] = "\t" + `"` + projectPath + "/" + files[key] + `"`
+		files[key] = "\t" + `"` + files[key] + `"`
 	}
 
 	importsString := ""
@@ -26,9 +38,9 @@ func getImportsString(projectPath string, files []string) string {
 	for _, val := range files {
 		importsString += val + "\n"
 	}
-	
+
 	importsString = strings.TrimLeft(importsString, "\t")
-	importsString = strings.Trim(importsString, "\n")	
+	importsString = strings.Trim(importsString, "\n")
 
 	return importsString
 }

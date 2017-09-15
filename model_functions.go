@@ -1,10 +1,11 @@
 package main
 
 import (
+	"github.com/francoFerraguti/go-abm-generator/structs"
 	"github.com/liteByte/frango"
 )
 
-func modelCreate(model ModelStruct) string {
+func modelCreate(model structs.ModelStruct) string {
 	createString := ""
 	fieldsList := ""
 	questionMarksList := ""
@@ -31,7 +32,7 @@ func modelCreate(model ModelStruct) string {
 	return createString
 }
 
-func modelUpdateBy(model ModelStruct, field FieldStruct) string {
+func modelUpdateBy(model structs.ModelStruct, field structs.FieldStruct) string {
 	updateString := ""
 	fieldsList := ""
 	parametersList := ""
@@ -46,7 +47,9 @@ func modelUpdateBy(model ModelStruct, field FieldStruct) string {
 	}
 	parametersList += frango.FirstLetterToLower(model.Name) + "." + frango.FirstLetterToUpper(field.Name)
 
-	fieldsList = frango.RemoveLastCharacters(fieldsList, 2)
+	if fieldsList != "" {
+		fieldsList = frango.RemoveLastCharacters(fieldsList, 2)
+	}
 
 	updateString += "func UpdateBy" + frango.FirstLetterToUpper(field.Name) + "(" + frango.FirstLetterToLower(model.Name) + " structs." + model.Name + "Struct" + ") error {\n"
 	updateString += "	_, err := dbhandler.GetDatabase().Exec(`UPDATE " + model.Name + " SET " + fieldsList + " WHERE " + frango.FirstLetterToLower(field.Name) + " = ?" + "`, " + parametersList + ")\n"
@@ -56,7 +59,7 @@ func modelUpdateBy(model ModelStruct, field FieldStruct) string {
 	return updateString
 }
 
-func modelGetBy(model ModelStruct, field FieldStruct) string {
+func modelGetBy(model structs.ModelStruct, field structs.FieldStruct) string {
 	getByString := ""
 	fieldsList := ""
 	fieldsListAmpersand := ""
@@ -84,7 +87,7 @@ func modelGetBy(model ModelStruct, field FieldStruct) string {
 	return getByString
 }
 
-func modelDeleteBy(model ModelStruct, field FieldStruct) string {
+func modelDeleteBy(model structs.ModelStruct, field structs.FieldStruct) string {
 	deleteByString := ""
 
 	deleteByString += "func DeleteBy" + frango.FirstLetterToUpper(field.Name) + "(" + frango.FirstLetterToLower(field.Name) + " " + field.Type + ") error {\n"

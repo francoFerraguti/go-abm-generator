@@ -1,4 +1,4 @@
-package main
+package structs
 
 import (
 	"encoding/json"
@@ -41,13 +41,13 @@ type FieldStruct struct {
 	AuthenticationPassword bool
 }
 
-func parseBody(body io.ReadCloser) (DataStruct, error) {
+func ParseBody(body io.ReadCloser) (DataStruct, error) {
 	bodyBytes, _ := ioutil.ReadAll(body)
 
-	dataStruct := DataStruct{}
-	err := json.Unmarshal(bodyBytes, &dataStruct)
+	DataStruct := DataStruct{}
+	err := json.Unmarshal(bodyBytes, &DataStruct)
 
-	return dataStruct, err
+	return DataStruct, err
 }
 
 /*
