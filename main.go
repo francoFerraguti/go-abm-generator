@@ -5,6 +5,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/liteByte/frango"
+
+	"github.com/francoFerraguti/go-abm-generator/generator"
 )
 
 var router *gin.Engine
@@ -52,7 +54,7 @@ func createFolderStructure(parentFolder string, needAuthentication bool) {
 }
 
 func createFiles(parentFolder string, projectPath string, needAuthentication bool, config ConfigStruct, models []ModelStruct) {
-	frango.CreateFile(parentFolder+"/main.go", getFileMainGo(projectPath))
+	frango.CreateFile(parentFolder+"/main.go", generator.GetMain(projectPath))
 	frango.CreateFile(parentFolder+"/config/config.go", getFileConfigGo(projectPath, needAuthentication, config))
 	frango.CreateFile(parentFolder+"/dbhandler/dbhandler.go", getFileDBHandlerGo(projectPath, models))
 	frango.CreateFile(parentFolder+"/dbhandler/schema.go", getFileDBSchemaGo(models))
