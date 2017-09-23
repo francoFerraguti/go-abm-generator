@@ -249,57 +249,6 @@ import (
 ` + schemaString
 }
 
-func getFileStructsGo(projectName string, needAuthentication bool, models []structs.ModelStruct) string {
-	structsString := ""
-	authStructString := ""
-
-	for _, model := range models {
-		structsString += "type " + model.Name + "Struct struct {\n"
-		for _, field := range model.Fields {
-			structsString += "	" + frango.FirstLetterToUpper(field.Name) + " " + field.Type + "\n"
-		}
-		structsString += "}\n\n"
-
-		structsString += "func ParseBodyInto" + model.Name + "Struct(body io.ReadCloser) (" + model.Name + "Struct, error) {\n"
-		structsString += "    bodyBytes, _ := ioutil.ReadAll(body)\n"
-		structsString += "    " + frango.FirstLetterToLower(model.Name) + "Struct := " + model.Name + "Struct{}\n"
-		structsString += "    err := json.Unmarshal(bodyBytes, &" + frango.FirstLetterToLower(model.Name) + "Struct)\n"
-		structsString += "    return " + frango.FirstLetterToLower(model.Name) + "Struct, err\n"
-		structsString += "}\n\n"
-	}
-
-	if needAuthentication {
-		authStructString += "type LoginStruct struct {\n"
-
-		for _, model := range models {
-			for _, field := range model.Fields {
-				if field.AuthenticationUsername || field.AuthenticationPassword {
-					authStructString += "	" + frango.FirstLetterToUpper(field.Name) + " " + field.Type + "\n"
-				}
-			}
-		}
-
-		authStructString += "}\n\n"
-
-		authStructString += "func ParseBodyIntoLoginStruct(body io.ReadCloser) (LoginStruct, error) {\n"
-		authStructString += "    bodyBytes, _ := ioutil.ReadAll(body)\n"
-		authStructString += "    loginStruct := LoginStruct{}\n"
-		authStructString += "    err := json.Unmarshal(bodyBytes, &loginStruct)\n"
-		authStructString += "    return loginStruct, err\n"
-		authStructString += "}\n\n"
-	}
-
-	return `package structs
-
-import (
-	"encoding/json"
-	"io"
-	"io/ioutil"
-)
-
-` + structsString + authStructString
-}
-
 func getFileModelGo(projectName string, needAuthentication bool, model structs.ModelStruct) string {
 	getByString := ""
 	deleteByString := ""

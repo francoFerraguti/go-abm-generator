@@ -5,6 +5,7 @@ import (
 	"github.com/francoFerraguti/go-abm-generator/generator/generatorMain"
 	"github.com/francoFerraguti/go-abm-generator/generator/generatorMiddleware"
 	"github.com/francoFerraguti/go-abm-generator/generator/generatorRouter"
+	"github.com/francoFerraguti/go-abm-generator/generator/generatorStructs"
 	"github.com/francoFerraguti/go-abm-generator/structs"
 )
 
@@ -22,4 +23,8 @@ func GetConfig(projectPath string, needAuthentication bool, config structs.Confi
 
 func GetRouter(projectPath string, needAuthentication bool, models []structs.ModelStruct) string {
 	return generatorRouter.Get(projectPath, needAuthentication, models)
+}
+
+func GetStructs(projectPath string, needAuthentication bool, models []structs.ModelStruct) string {
+	return generatorStructs.Get(projectPath, needAuthentication, models)
 }

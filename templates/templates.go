@@ -106,3 +106,18 @@ func RunRouter() {
 }
 `
 }
+
+func StructsGo() string {
+	return `package structs
+
+import (
+	"encoding/json"
+	"io"
+	"io/ioutil"
+)
+
+&&AUTH_STRUCTS&&
+
+&&STRUCTS&&
+`
+}
