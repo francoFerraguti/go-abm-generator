@@ -57,7 +57,7 @@ func createFolderStructure(parentFolder string, needAuthentication bool) {
 func createFiles(parentFolder string, projectPath string, needAuthentication bool, config structs.ConfigStruct, models []structs.ModelStruct) {
 	frango.CreateFile(parentFolder+"/main.go", generator.GetMain(projectPath))
 	frango.CreateFile(parentFolder+"/config/config.go", generator.GetConfig(projectPath, needAuthentication, config))
-	frango.CreateFile(parentFolder+"/dbhandler/dbhandler.go", getFileDBHandlerGo(projectPath, models))
+	frango.CreateFile(parentFolder+"/dbhandler/dbhandler.go", generator.GetDBHandler(projectPath, models))
 	frango.CreateFile(parentFolder+"/dbhandler/schema.go", getFileDBSchemaGo(models))
 	frango.CreateFile(parentFolder+"/structs/structs.go", generator.GetStructs(projectPath, needAuthentication, models))
 	frango.CreateFile(parentFolder+"/router/router.go", generator.GetRouter(projectPath, needAuthentication, models))

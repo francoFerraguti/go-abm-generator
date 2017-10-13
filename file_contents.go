@@ -140,46 +140,6 @@ func GetTokenData(tokenString string) Token {
 `
 }
 
-func getFileDBHandlerGo(projectPath string, models []structs.ModelStruct) string {
-	schemaString := "func createSchema() {\n"
-
-	for _, model := range models {
-		schemaString += "	create" + model.Name + "Table()\n"
-	}
-
-	schemaString += "}"
-
-	return `package dbhandler
-
-import (
-    "database/sql"
-    _ "github.com/go-sql-driver/mysql"
-
-    "github.com/liteByte/frango"
-    "` + projectPath + `/config"
-)
-
-var db *sql.DB
-
-func ConnectToDatabase() {
-    var err error
-	
-	db, err = sql.Open(config.GetConfig().DB_TYPE, config.GetConfig().DB_USERNAME + ":" + config.GetConfig().DB_PASSWORD + "@tcp(" + config.GetConfig().DB_HOST + ":" + config.GetConfig().DB_PORT + ")/" + config.GetConfig().DB_NAME)
-	frango.PrintErr(err)
-    
-    err = db.Ping()
-    frango.PrintErr(err)
-
-    createSchema()
-}
-
-func GetDatabase() *sql.DB {
-    return db
-}
-
-` + schemaString
-}
-
 func getFileDBSchemaGo(models []structs.ModelStruct) string {
 	schemaString := ""
 

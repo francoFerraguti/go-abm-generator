@@ -1,6 +1,7 @@
 package generator
 
 import (
+	"github.com/francoFerraguti/go-abm-generator/generator/generatorDBHandler"
 	"github.com/francoFerraguti/go-abm-generator/generator/generatorConfig"
 	"github.com/francoFerraguti/go-abm-generator/generator/generatorMain"
 	"github.com/francoFerraguti/go-abm-generator/generator/generatorMiddleware"
@@ -27,4 +28,8 @@ func GetRouter(projectPath string, needAuthentication bool, models []structs.Mod
 
 func GetStructs(projectPath string, needAuthentication bool, models []structs.ModelStruct) string {
 	return generatorStructs.Get(projectPath, needAuthentication, models)
+}
+
+func GetDBHandler(projectPath string, models []structs.ModelStruct) string {
+	return generatorDBHandler.Get(projectPath, models)
 }
