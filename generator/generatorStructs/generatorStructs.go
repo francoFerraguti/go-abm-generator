@@ -62,6 +62,11 @@ func getStructFirstPart(model structs.ModelStruct) string {
 
 	structsString += "type " + model.Name + "Struct struct {\n"
 	for _, field := range model.Fields {
+
+		if field.Type == "float" {
+			field.Type = "float64"
+		}
+
 		structsString += "	" + frango.FirstLetterToUpper(field.Name) + " " + field.Type + "\n"
 	}
 	structsString += "}\n\n"

@@ -64,14 +64,14 @@ func GetConfig() *Config {
 func newConfigLocal() Config {
 	return Config{
 		ENV:			"develop",
-		PORT:			&&CONFIG_PORT&&,
+		PORT:			"&&CONFIG_PORT&&",
 		&&CONFIG_AUTHENTICATION_VALUE&&,
-		DB_TYPE:       	&&CONFIG_DB_TYPE&&,
-		DB_USERNAME:    &&CONFIG_DB_USERNAME&&,
-		DB_PASSWORD:    &&CONFIG_DB_PASSWORD&&,
-		DB_HOST:      	&&CONFIG_DB_HOST&&,
-		DB_PORT:       	&&CONFIG_DB_PORT&&,
-		DB_NAME:       	&&CONFIG_DB_NAME&&,
+		DB_TYPE:       	"&&CONFIG_DB_TYPE&&",
+		DB_USERNAME:    "&&CONFIG_DB_USERNAME&&",
+		DB_PASSWORD:    "&&CONFIG_DB_PASSWORD&&",
+		DB_HOST:      	"&&CONFIG_DB_HOST&&",
+		DB_PORT:       	"&&CONFIG_DB_PORT&&",
+		DB_NAME:       	"&&CONFIG_DB_NAME&&",
 	}
 }
 `
@@ -148,5 +148,78 @@ func GetDatabase() *sql.DB {
 func createSchema() {
 &&SCHEMA_FUNCTIONS&&
 }
+`
+}
+
+func SchemaGo() string {
+	return `package dbhandler
+
+import (
+    "github.com/liteByte/frango"
+)
+
+&&SCHEMA&&
+`
+}
+
+func DocumentationMd() string {
+	return `&&DOCUMENTATION&&`
+}
+
+func AuthenticationGo() string {
+	return `package authentication
+
+&&IMPORTS&&
+
+&&CUSTOM_CLAIMS_STRUCT&&
+
+&&TOKEN_STRUCT&&
+
+&&TOKEN_FUNCTIONS&&
+`
+}
+
+func AuthenticationControllerGo() string {
+	return `package authentication
+
+&&IMPORTS&&
+
+&&FUNCTIONS&&
+`
+}
+
+func ModelGo() string {
+	return `&&PACKAGE_NAME&&
+
+&&IMPORTS&&
+
+&&CHECK_LOGIN&&
+
+&&CREATE&&
+
+&&GET_LIST&&
+
+&&GET&&
+
+&&UPDATE&&
+
+&&DELETE&&
+`
+}
+
+func ControllerGo() string {
+	return `&&PACKAGE_NAME&&
+
+&&IMPORTS&&
+
+&&CREATE&&
+
+&&GET_LIST&&
+
+&&GET&&
+
+&&UPDATE&&
+
+&&DELETE&&
 `
 }

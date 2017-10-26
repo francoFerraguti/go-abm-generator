@@ -30,13 +30,21 @@ import (
 
 func getImportsString(files []string) string {
 	for key, _ := range files {
-		files[key] = "\t" + `"` + files[key] + `"`
+		if files[key] != "" {
+			files[key] = "\t" + `"` + files[key] + `"`
+		}
 	}
 
 	importsString := ""
 
 	for _, val := range files {
-		importsString += val + "\n"
+		if val != "" {
+			if strings.Contains(val, "github.com/go-sql-driver/mysql") {
+				importsString += "_ "
+			}
+
+			importsString += val + "\n"
+		}
 	}
 
 	importsString = strings.TrimLeft(importsString, "\t")

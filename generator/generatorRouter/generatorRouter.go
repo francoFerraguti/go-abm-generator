@@ -9,7 +9,7 @@ import (
 )
 
 func Get(projectPath string, needAuthentication bool, models []structs.ModelStruct) string {
-	importArray := []string{"github.com/gin-gonic/gin"}
+	importArray := []string{"github.com/gin-gonic/gin", projectPath + "/config"}
 	endpoints := ""
 
 	ginMiddlewareString, authEndpoints, authImports := getAuthenticationVariables(projectPath, needAuthentication)
@@ -41,15 +41,16 @@ func getEndpoints(fields []structs.FieldStruct, modelNameLower, modelNameUpper s
 	endpoints := ""
 
 	endpoints += "		api.POST(`/" + modelNameLower + "`, " + modelNameLower + ".Create)\n"
+	endpoints += "		api.GET(`/" + modelNameLower + "/list`, " + modelNameLower + ".GetList)\n"
 
 	for _, field := range fields {
 		if !field.Unique {
 			continue
 		}
 
-		endpoints += "		api.GET(`/" + modelNameLower + "/" + modelNameLower + "/:" + modelNameLower + "`, " + modelNameLower + ".GetBy" + modelNameUpper + ")\n"
-		endpoints += "		api.PUT(`/" + modelNameLower + "/" + modelNameLower + "/:" + modelNameLower + "`, " + modelNameLower + ".UpdateBy" + modelNameUpper + ")\n"
-		endpoints += "		api.DELETE(`/" + modelNameLower + "/" + modelNameLower + "/:" + modelNameLower + "`, " + modelNameLower + ".DeleteBy" + modelNameUpper + ")\n"
+		endpoints += "		api.GET(`/" + modelNameLower + "/" + frango.FirstLetterToLower(field.Name) + "/:" + frango.FirstLetterToLower(field.Name) + "`, " + modelNameLower + ".GetBy" + frango.FirstLetterToUpper(field.Name) + ")\n"
+		endpoints += "		api.PUT(`/" + modelNameLower + "/" + frango.FirstLetterToLower(field.Name) + "/:" + frango.FirstLetterToLower(field.Name) + "`, " + modelNameLower + ".UpdateBy" + frango.FirstLetterToUpper(field.Name) + ")\n"
+		endpoints += "		api.DELETE(`/" + modelNameLower + "/" + frango.FirstLetterToLower(field.Name) + "/:" + frango.FirstLetterToLower(field.Name) + "`, " + modelNameLower + ".DeleteBy" + frango.FirstLetterToUpper(field.Name) + ")\n"
 	}
 
 	return endpoints
