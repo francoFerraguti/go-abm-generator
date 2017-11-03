@@ -1,18 +1,42 @@
 package generator
 
 import (
-	"github.com/francoFerraguti/go-abm-generator/generator/generatorAuthentication"
-	"github.com/francoFerraguti/go-abm-generator/generator/generatorAuthenticationController"
-	"github.com/francoFerraguti/go-abm-generator/generator/generatorConfig"
-	"github.com/francoFerraguti/go-abm-generator/generator/generatorController"
-	"github.com/francoFerraguti/go-abm-generator/generator/generatorDBHandler"
-	"github.com/francoFerraguti/go-abm-generator/generator/generatorDocumentation"
-	"github.com/francoFerraguti/go-abm-generator/generator/generatorMain"
-	"github.com/francoFerraguti/go-abm-generator/generator/generatorMiddleware"
-	"github.com/francoFerraguti/go-abm-generator/generator/generatorModel"
-	"github.com/francoFerraguti/go-abm-generator/generator/generatorRouter"
-	"github.com/francoFerraguti/go-abm-generator/generator/generatorSchema"
-	"github.com/francoFerraguti/go-abm-generator/generator/generatorStructs"
+	"github.com/francoFerraguti/go-abm-generator/generator/backend/generatorAuthentication"
+	"github.com/francoFerraguti/go-abm-generator/generator/backend/generatorAuthenticationController"
+	"github.com/francoFerraguti/go-abm-generator/generator/backend/generatorConfig"
+	"github.com/francoFerraguti/go-abm-generator/generator/backend/generatorController"
+	"github.com/francoFerraguti/go-abm-generator/generator/backend/generatorDBHandler"
+	"github.com/francoFerraguti/go-abm-generator/generator/backend/generatorDocumentation"
+	"github.com/francoFerraguti/go-abm-generator/generator/backend/generatorMain"
+	"github.com/francoFerraguti/go-abm-generator/generator/backend/generatorMiddleware"
+	"github.com/francoFerraguti/go-abm-generator/generator/backend/generatorModel"
+	"github.com/francoFerraguti/go-abm-generator/generator/backend/generatorRouter"
+	"github.com/francoFerraguti/go-abm-generator/generator/backend/generatorSchema"
+	"github.com/francoFerraguti/go-abm-generator/generator/backend/generatorStructs"
+
+	"github.com/francoFerraguti/go-abm-generator/generator/frontend/generatorAppCss"
+	"github.com/francoFerraguti/go-abm-generator/generator/frontend/generatorAppJs"
+	"github.com/francoFerraguti/go-abm-generator/generator/frontend/generatorAppTestJs"
+	"github.com/francoFerraguti/go-abm-generator/generator/frontend/generatorAvatarJs"
+	"github.com/francoFerraguti/go-abm-generator/generator/frontend/generatorComponentEndpointsJs"
+	"github.com/francoFerraguti/go-abm-generator/generator/frontend/generatorComponentJs"
+	"github.com/francoFerraguti/go-abm-generator/generator/frontend/generatorComponentPaginationJs"
+	"github.com/francoFerraguti/go-abm-generator/generator/frontend/generatorComponentTableJs"
+	"github.com/francoFerraguti/go-abm-generator/generator/frontend/generatorDrawerJs"
+	"github.com/francoFerraguti/go-abm-generator/generator/frontend/generatorGitIgnore"
+	"github.com/francoFerraguti/go-abm-generator/generator/frontend/generatorIndexCss"
+	"github.com/francoFerraguti/go-abm-generator/generator/frontend/generatorIndexHtml"
+	"github.com/francoFerraguti/go-abm-generator/generator/frontend/generatorIndexJs"
+	"github.com/francoFerraguti/go-abm-generator/generator/frontend/generatorLayoutJs"
+	"github.com/francoFerraguti/go-abm-generator/generator/frontend/generatorLoginApiJs"
+	"github.com/francoFerraguti/go-abm-generator/generator/frontend/generatorLoginJs"
+	"github.com/francoFerraguti/go-abm-generator/generator/frontend/generatorLogoSvg"
+	"github.com/francoFerraguti/go-abm-generator/generator/frontend/generatorMainJs"
+	"github.com/francoFerraguti/go-abm-generator/generator/frontend/generatorManifestJson"
+	"github.com/francoFerraguti/go-abm-generator/generator/frontend/generatorMuiThemeJs"
+	"github.com/francoFerraguti/go-abm-generator/generator/frontend/generatorPackageJson"
+	"github.com/francoFerraguti/go-abm-generator/generator/frontend/generatorRegisterServiceWorkerJs"
+	"github.com/francoFerraguti/go-abm-generator/generator/frontend/generatorRestrictedJs"
 
 	"github.com/francoFerraguti/go-abm-generator/structs"
 )
@@ -63,4 +87,77 @@ func GetModel(projectPath string, needAuthentication bool, model structs.ModelSt
 
 func GetController(projectPath string, model structs.ModelStruct) string {
 	return generatorController.Get(projectPath, model)
+}
+
+//
+
+func GetAppCss() string {
+	return generatorAppCss.Get()
+}
+
+func GetAppJs() string {
+	return generatorAppJs.Get()
+}
+func GetAppTestJs() string {
+	return generatorAppTestJs.Get()
+}
+func GetAvatarJs() string {
+	return generatorAvatarJs.Get()
+}
+func GetComponentEndpointsJs(model structs.ModelStruct) string {
+	return generatorComponentEndpointsJs.Get(model)
+}
+func GetComponentJs(model structs.ModelStruct) string {
+	return generatorComponentJs.Get(model)
+}
+func GetComponentPaginationJs() string {
+	return generatorComponentPaginationJs.Get()
+}
+func GetComponentTableJs(model structs.ModelStruct) string {
+	return generatorComponentTableJs.Get(model)
+}
+func GetDrawerJs(models []structs.ModelStruct) string {
+	return generatorDrawerJs.Get(models)
+}
+func GetGitIgnore() string {
+	return generatorGitIgnore.Get()
+}
+func GetIndexCss() string {
+	return generatorIndexCss.Get()
+}
+func GetIndexHtml() string {
+	return generatorIndexHtml.Get()
+}
+func GetIndexJs() string {
+	return generatorIndexJs.Get()
+}
+func GetLayoutJs(models []structs.ModelStruct) string {
+	return generatorLayoutJs.Get(models)
+}
+func GetLoginApiJs() string {
+	return generatorLoginApiJs.Get()
+}
+func GetLoginJs() string {
+	return generatorLoginJs.Get()
+}
+func GetLogoSvg() string {
+	return generatorLogoSvg.Get()
+}
+func GetMainJs() string {
+	return generatorMainJs.Get()
+}
+func GetManifestJson() string {
+	return generatorManifestJson.Get()
+}
+func GetMuiThemeJs() string {
+	return generatorMuiThemeJs.Get()
+}
+func GetPackageJson() string {
+	return generatorPackageJson.Get()
+}
+func GetRegisterServiceWorkerJs() string {
+	return generatorRegisterServiceWorkerJs.Get()
+}
+func GetRestrictedJs() string {
+	return generatorRestrictedJs.Get()
 }

@@ -1,0 +1,37 @@
+{
+  "name": "todo-change",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "axios": "^0.16.2",
+    "jquery": "^3.2.1",
+    "material-ui": "^0.19.1",
+    "materialui-pagination": "0.0.6",
+    "react": "^15.6.1",
+    "react-confirm-alert": "^1.0.7",
+    "react-dom": "^15.6.1",
+    "react-form-validator-core": "^0.1.0",
+    "react-google-maps": "^9.2.0",
+    "react-loading-spinner": "^1.0.12",
+    "react-material-ui-form-validator": "^1.0.0",
+    "react-notification-system": "^0.2.15",
+    "react-router": "^4.2.0",
+    "react-router-dom": "^4.2.2",
+    "react-scripts": "1.0.13",
+    "underscore": "^1.8.3"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test --env=jsdom",
+    "eject": "react-scripts eject"
+  },
+  "devDependencies": {
+    "eslint-config-google": "^0.9.1"
+  },
+  "main": ".eslintrc.js",
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": ""
+}
