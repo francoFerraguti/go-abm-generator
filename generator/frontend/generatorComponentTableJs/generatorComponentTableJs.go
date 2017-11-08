@@ -120,7 +120,7 @@ func getFieldsTextValidators(model structs.ModelStruct) string {
 
 		output += "<TextValidator\n"
 		output += "    floatingLabelText='" + frango.FirstLetterToUpper(field.Name) + "'\n"
-		output += "    onChange={this._handleChange}\n"
+		output += "    onChange={this._handleChange" + frango.FirstLetterToUpper(field.Name) + "}\n"
 		output += "    name='" + field.Name + "'\n"
 		output += "    value={this.state." + field.Name + "}\n"
 
